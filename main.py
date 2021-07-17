@@ -198,6 +198,22 @@ def goHelp():
     helpV = input("Enter --resume to continue: ")
     system('clear')
 
+#Function that executes the skip mechanism
+def skip(index, direction, playerCount):
+  #If the index is near top edge, we can just subtract it with the amount of players
+  if index <= 1 and direction == -1:
+    return index + 2 * direction - playerCount + 1
+  #If the index is near bottom edge, we can just add it with the amount of players
+  elif index >= playerCount - 2 and direction == 1:
+    return index + 2 * direction + playerCount - 1
+  #If the index is not near edge, we can skip with the standard equation
+  else:
+    #Depending on the direction, we need to either send one more or one less to compensate for the algorithm on startGame indexing
+    if direction == 1:
+      return index + 2 * direction - 1
+    else:
+      return index + 2 * direction + 1
+
 #Function that checks if a card is playable and returns the index
 def canPlay(card, hand):
   for cards in range(len(hand)):
@@ -218,7 +234,7 @@ def localOptions(player, drawAmount, colorOption, discardTop):
     print("\nColor Option: " + colorOption,end="")
   print("\nType --help for rules\n")
 
-#Function to determine if a player can play a number card
+#Function to determine if a player can play a number card or action card
 def canPlayActNum(playCard, discardTop, colorOption):
   if playCard.getColor() == discardTop.getColor() or playCard.getValue() == discardTop.getValue() or playCard.getColor() == colorOption:
     return True
@@ -329,7 +345,7 @@ def startGame(players, deck):
               elif playCard.getValue() == "⇄" and drawAmount == 0:
                 direction = 1 if direction == -1 else -1
               elif playCard.getValue() == "X" and drawAmount == 0:
-                currPlayerIndex += 2 * direction
+                currPlayerIndex = skip(currPlayerIndex, direction, len(players))
               else:  
                 print("\nInvalid Card...\n")
                 sleep(3)
@@ -385,7 +401,7 @@ def startGame(players, deck):
           elif playCard.getValue() == "⇄":
             direction = 1 if direction == -1 else -1
           else:
-            currPlayerIndex += 2 * direction
+            currPlayerIndex = skip(currPlayerIndex, direction, len(players))
         elif isinstance(playCard, WildCard):
           if playCard.getValue() == "+4":
             drawAmount += 4
@@ -410,11 +426,9 @@ def startGame(players, deck):
       discardPile.append(discardTop)
     
     currPlayerIndex += direction
-    if currPlayerIndex >= len(players):
-      currPlayerIndex = 0
-    elif currPlayerIndex < 0:
-      currPlayerIndex = len(players) - 1
-    
+    #Check if we are on list edge
+    currPlayerIndex = 0 if currPlayerIndex > len(players) - 1 else currPlayerIndex
+    currPlayerIndex = len(players) - 1 if currPlayerIndex < 0 else currPlayerIndex
     #Sleep for 4 seconds
     sleep(4)
 

@@ -266,6 +266,8 @@ def startGame(players, deck):
     currPlayer = players[currPlayerIndex]
     print(currPlayer.getName() + "'s turn\n")
     for player in range(len(players)):
+      if player == currPlayerIndex:
+        print("►",end="")
       print(players[player])
     
     print("")

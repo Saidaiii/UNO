@@ -76,14 +76,16 @@ class Player:
   
   #Prints all cards with its respective colors and face values
   def showHand(self):
-      for card in self.hand:
-          cprint(card, card.getColor(), cc, end = "")
+      for card in range(self.lenHand()):
+          cprint(self.hand[card], self.hand[card].getColor(), cc, end = "")
           print(" ", end="")
+          if card >= 9 and (self.hand[card].value != "+2" and self.hand[card].value != "+4"):
+            print(" ", end="")
       print("")
       for i in range(1, self.lenHand() + 1):
         print(str(i) + " ", end = "")
         if isinstance(self.hand[i-1], (ActionCard, WildCard)):
-          if self.hand[i-1].type == "d2" or self.hand[i-1].type == "d4":
+          if (self.hand[i-1].type == "d2" or self.hand[i-1].type == "d4") and i < 10:
             print(" ", end="")
   
   #Appends a card to the hand

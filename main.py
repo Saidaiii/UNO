@@ -477,7 +477,7 @@ def startGame(players, deck):
     sleep(4)
 
 #Function that prints the single player menu
-def SPMenu(deck):
+def SPMenu():
   colorTitle()
   print("\nCHOOSE AMOUNT OF BOTS!\n")
   print("[1] [2] [3]\n")
@@ -496,6 +496,8 @@ def SPMenu(deck):
       option = -1
 
   nameS = input("\nInput your name: ")
+  #Create the Deck
+  deck = createDeck()
   #Create Player List
   playerList = []
   #Create Hand
@@ -514,18 +516,15 @@ def SPMenu(deck):
       hand.append(deck.pop())
     bot = Player(hand, get_first_name())
     playerList.append(bot)
-
+  
   startGame(playerList, deck)
 
 while True:
-  #Create the Deck
-  cardDeck = createDeck()
-
   #Show menu and receive option
   option = menu()
 
   if option == 1:
-    SPMenu(cardDeck)
+    SPMenu()
   elif option == 3:
     goHelp()
   elif option == 4:

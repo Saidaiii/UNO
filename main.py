@@ -68,6 +68,7 @@ class Player:
   def __init__(self, aHand = [], aName = ""):
       self.hand = aHand
       self.name = aName
+      self.win = False
   
   #Print Name and amount of cards of Player
   def __str__(self):
@@ -101,6 +102,13 @@ class Player:
   #Returns Players name
   def getName(self):
     return self.name
+
+  #Checks if the player wins
+  def checkWin(self):
+    if len(self.hand) == 0:
+      return True
+    else:
+      return False
 
 #####FUNCTIONS######
 
@@ -148,7 +156,8 @@ def colorTitle():
 def menu():
   colorTitle()
   print("\nCHOOSE MODE!\n")
-  print("1. Single Player (Play VS Bots)\n")
+  print("1. Single Player (Play VS Bots)")
+  print("3. EXIT\n")
   try:
     option = int(input("Option: "))
   except:
@@ -157,8 +166,8 @@ def menu():
   #Make sure the user picks a number in the range and no errors produce
   while True:
     try:
-      while option != 1:
-        option = int(input("Option must be between 1: "))
+      while option != 1 and option != 3:
+        option = int(input("Option must be 1 or 3: "))
       break
     except:
       option = -1
@@ -197,6 +206,13 @@ def goHelp():
 
     helpV = input("Enter --resume to continue: ")
     system('clear')
+
+#Function that prints the roster names and their cards
+def showRoster(players, index):
+  for player in range(len(players)):
+      if player == index:
+        print("►",end="")
+      print(players[player])
 
 #Function that executes the skip mechanism
 def skip(index, direction, playerCount):
@@ -281,10 +297,7 @@ def startGame(players, deck):
     system('clear')
     currPlayer = players[currPlayerIndex]
     print(currPlayer.getName() + "'s turn\n")
-    for player in range(len(players)):
-      if player == currPlayerIndex:
-        print("►",end="")
-      print(players[player])
+    showRoster(players, currPlayerIndex)
     
     print("")
     cprint(discardPile[-1], discardPile[-1].getColor(),cc, end="")
@@ -417,6 +430,15 @@ def startGame(players, deck):
         sleep(3)
         currPlayer.draw(deck.pop())
 
+    #Check if a player won
+    if currPlayer.checkWin():
+      system('clear')
+      showRoster(players, currPlayerIndex)
+      print("\n" + currPlayer.getName() + " wins!\n")
+      print("Returning to Main Menu in 5 seconds...")
+      sleep(5)
+      system('clear')
+      break
     #Check if deck is close to empty, take out top card of discardPile, reshuffle discard pile and refill deck
     if len(deck) <= 16:
       discardTop = discardPile.pop()
@@ -473,11 +495,14 @@ def SPMenu(deck):
 
   startGame(playerList, deck)
 
-#Create the Deck
-cardDeck = createDeck()
+while True:
+  #Create the Deck
+  cardDeck = createDeck()
 
-#Show menu and receive option
-option = menu()
+  #Show menu and receive option
+  option = menu()
 
-if option == 1:
-  SPMenu(cardDeck)
+  if option == 1:
+    SPMenu(cardDeck)
+  if option == 3:
+    break

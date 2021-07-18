@@ -495,6 +495,7 @@ def SPMenu():
   #Make sure the user picks a number in the range and no errors produce
   while True:
     try:
+      option = int(option)
       while (option < 1) or (option > 7):
         option = int(input("Option must be between 1-7: "))
       break

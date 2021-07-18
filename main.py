@@ -480,17 +480,23 @@ def startGame(players, deck):
 def SPMenu():
   colorTitle()
   print("\nCHOOSE AMOUNT OF BOTS!\n")
-  print("[1] [2] [3]\n")
+  print("[1] [2] [3] [4] [5] [6] [7]\n")
+  print("Enter 'back' to return to Main Menu\n")
+  option = (input("Option: "))
+  
+  #Filter the back option with a Try Statement
   try:
-    option = int(input("Option: "))
+    if option == 'back':
+      system('clear')
+      return
   except:
-    option = -1
+    pass
 
   #Make sure the user picks a number in the range and no errors produce
   while True:
     try:
-      while (option < 1) or (option > 3):
-        option = int(input("Option must be between 1-3: "))
+      while (option < 1) or (option > 7):
+        option = int(input("Option must be between 1-7: "))
       break
     except:
       option = -1

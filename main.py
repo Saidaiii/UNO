@@ -202,10 +202,10 @@ def goHelp():
 def skip(index, direction, playerCount):
   #If the index is near top edge, we can just subtract it with the amount of players
   if index <= 1 and direction == -1:
-    return index + 2 * direction - playerCount + 1
+    return index + 2 * direction + playerCount + 1
   #If the index is near bottom edge, we can just add it with the amount of players
   elif index >= playerCount - 2 and direction == 1:
-    return index + 2 * direction + playerCount - 1
+    return index + 2 * direction - playerCount - 1
   #If the index is not near edge, we can skip with the standard equation
   else:
     #Depending on the direction, we need to either send one more or one less to compensate for the algorithm on startGame indexing
@@ -215,9 +215,9 @@ def skip(index, direction, playerCount):
       return index + 2 * direction + 1
 
 #Function that checks if a card is playable and returns the index
-def canPlay(card, hand):
+def canPlay(card, hand, colorOption):
   for cards in range(len(hand)):
-    if (card.getValue() == hand[cards].getValue()) or (card.getColor() == hand[cards].getColor() or (isinstance(hand[cards],WildCard))):
+    if (card.getValue() == hand[cards].getValue() or card.getColor() == hand[cards].getColor() or hand[cards].getColor() == colorOption or isinstance(hand[cards],WildCard)):
       return cards
   return -1
 
@@ -357,9 +357,9 @@ def startGame(players, deck):
           else:
             if playCard.getValue() == "+4" and not (discardPile[-1].getValue() == "+2"):
               drawAmount += 4
-              pickColor(colors)
+              colorOption = pickColor(colors)
             elif playCard.getValue() == "☯" and drawAmount == 0:
-              pickColor(colors)
+              colorOption = pickColor(colors)
             else:
               print("\nInvalid Card...\n")
               sleep(3)
@@ -390,8 +390,8 @@ def startGame(players, deck):
           drawPile.append(deck.pop())
         drawAmount = 0
         currPlayer.drawN(drawPile)
-      elif canPlay(discardPile[-1], currPlayer.hand) != -1:
-        action = canPlay(discardPile[-1], currPlayer.hand)
+      elif canPlay(discardPile[-1], currPlayer.hand, colorOption) != -1:
+        action = canPlay(discardPile[-1], currPlayer.hand, colorOption)
         playCard = currPlayer.hand[action]
         if isinstance(playCard, NumberCard):
           pass
@@ -421,7 +421,7 @@ def startGame(players, deck):
     if len(deck) <= 16:
       discardTop = discardPile.pop()
       shuffle(discardPile)
-      for discardCards in (len(discardPile) - 8):
+      for discardCards in (len(discardPile)):
         deck.append(discardPile.pop())
       discardPile.append(discardTop)
     

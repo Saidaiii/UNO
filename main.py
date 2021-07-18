@@ -346,7 +346,7 @@ def startGame(players, deck):
       try:
         if action == 'd':
           print("\nDrawing Card(s)...\n")
-          sleep(3)
+          sleep(2)
           currPlayer = executeDraw(drawAmount, currPlayer, deck)
           currPlayer.sortHand()
           drawAmount = 0
@@ -402,7 +402,7 @@ def startGame(players, deck):
           
           discardPile.append(currPlayer.hand.pop(action))
           print("\nThrowing Card...\n")
-          sleep(3)
+          sleep(2)
         else:
           print("\nInvalid Option...\n")
           sleep(3)
@@ -412,7 +412,7 @@ def startGame(players, deck):
           pass
         else:
           print("\nInvalid Option...\n")
-          sleep(3)
+          sleep(2)
           continue
 
     #Bots Turn
@@ -446,10 +446,10 @@ def startGame(players, deck):
         
         discardPile.append(currPlayer.hand.pop(action))
         print("\nThrowing Card...\n")
-        sleep(3)
+        sleep(2)
       else:
         print("\nDrawing Card...\n")
-        sleep(3)
+        sleep(2)
         currPlayer.draw(deck.pop())
 
     #Check if a player won

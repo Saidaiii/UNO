@@ -177,6 +177,7 @@ def menu():
   print("1. Single Player (Play VS Bots)")
   print("3. Read Rules")
   print("4. EXIT\n")
+  print("Developed by Saidaiii\n")
   try:
     option = int(input("Option: "))
   except:
@@ -474,7 +475,7 @@ def startGame(players, deck):
     currPlayerIndex = 0 if currPlayerIndex > len(players) - 1 else currPlayerIndex
     currPlayerIndex = len(players) - 1 if currPlayerIndex < 0 else currPlayerIndex
     #Sleep for 4 seconds
-    sleep(4)
+    sleep(3)
 
 #Function that prints the single player menu
 def SPMenu():

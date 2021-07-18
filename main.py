@@ -102,6 +102,22 @@ class Player:
   #Returns Players name
   def getName(self):
     return self.name
+  
+  #Sort Players hand
+  def sortHand(self):
+    colorList = ['blue', 'red', 'green', 'yellow']
+    startWindow = 0
+    currPtr = 0
+
+    for color in colorList:
+      while currPtr != self.lenHand():
+        if self.hand[currPtr].getColor() == color:
+          self.hand[currPtr], self.hand[startWindow] = self.hand[startWindow], self.hand[currPtr]
+          startWindow += 1
+        currPtr += 1
+      currPtr = startWindow
+
+
 
   #Checks if the player wins
   def checkWin(self):
@@ -292,6 +308,8 @@ def startGame(players, deck):
   drawAmount = 0
   colorOption = ""
   colors = ['red', 'blue', 'green', 'yellow']
+  #Sort Local Hand
+  players[0].sortHand()
 
   while True:
     system('clear')
@@ -327,6 +345,7 @@ def startGame(players, deck):
           print("\nDrawing Card(s)...\n")
           sleep(3)
           currPlayer = executeDraw(drawAmount, currPlayer, deck)
+          currPlayer.sortHand()
           drawAmount = 0
       except:
         pass

@@ -175,7 +175,8 @@ def menu():
   colorTitle()
   print("\nCHOOSE MODE!\n")
   print("1. Single Player (Play VS Bots)")
-  print("3. EXIT\n")
+  print("3. Read Rules")
+  print("4. EXIT\n")
   try:
     option = int(input("Option: "))
   except:
@@ -184,8 +185,8 @@ def menu():
   #Make sure the user picks a number in the range and no errors produce
   while True:
     try:
-      while option != 1 and option != 3:
-        option = int(input("Option must be 1 or 3: "))
+      while option != 1 and option != 3 and option != 4:
+        option = int(input("Option must be 1, 3 or 4: "))
       break
     except:
       option = -1
@@ -525,5 +526,7 @@ while True:
 
   if option == 1:
     SPMenu(cardDeck)
-  if option == 3:
+  elif option == 3:
+    goHelp()
+  elif option == 4:
     break

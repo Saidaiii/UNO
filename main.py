@@ -69,10 +69,14 @@ class Player:
       self.hand = aHand
       self.name = aName
       self.win = False
+      self.UNO = False
   
   #Print Name and amount of cards of Player
   def __str__(self):
-    return (self.getName() + ": " + self.lenHand() * "🂠 ")
+    print(self.getName() + ": " + self.lenHand() * "🂠 ",end="")
+    if self.lenHand() == 1 and self.UNO:
+      self.colorTitle()
+    return ('')
   
   #Prints all cards with its respective colors and face values
   def showHand(self):
@@ -91,11 +95,13 @@ class Player:
   #Appends a card to the hand
   def draw(self, card):
     self.hand.append(card)
+    self.UNO = False
 
   #Appends many cards to the hand
   def drawN(self, cardStack):
     for card in cardStack:
       self.hand.append(card)
+    self.UNO = False
   
   #Returns the amount of cards in the players hand
   def lenHand(self):
@@ -118,8 +124,24 @@ class Player:
           startWindow += 1
         currPtr += 1
       currPtr = startWindow
+  
+  #Player says UNO!
+  def setUNO(self):
+    self.UNO = True
 
-
+  #Check if player said UNO for himself
+  def selfUNO(self):
+    if self.UNO and self.lenHand() == 1:
+      return True
+    else:
+      return False
+  
+  #Check if player forgot to say UNO
+  def forgotSelfUNO(self):
+    if not self.UNO and self.lenHand() == 1:
+      return True
+    else:
+      return False
 
   #Checks if the player wins
   def checkWin(self):
@@ -127,6 +149,12 @@ class Player:
       return True
     else:
       return False
+  
+  def colorTitle(self):
+    cprint("U", 'blue', cc, end="")
+    cprint("N", 'yellow', cc, end="")
+    cprint("O", 'green', cc, end="")
+    cprint("!", 'red', cc, end="")
 
 #####FUNCTIONS######
 
@@ -175,6 +203,7 @@ def menu():
   colorTitle()
   print("\nCHOOSE MODE!\n")
   print("1. Single Player (Play VS Bots)")
+  print("2. Multi-Player (Coming Soon!)")
   print("3. Read Rules")
   print("4. EXIT\n")
   print("Developed by Saidaiii\n")
@@ -186,8 +215,8 @@ def menu():
   #Make sure the user picks a number in the range and no errors produce
   while True:
     try:
-      while option != 1 and option != 3 and option != 4:
-        option = int(input("Option must be 1, 3 or 4: "))
+      while option < 1 and option > 4:
+        option = int(input("Option must be 1-4: "))
       break
     except:
       option = -1
@@ -203,7 +232,7 @@ def goHelp():
     print("Every player will receive 7 cards at the start. One player will be chosen randomly. You will see your oponents on the top of the screen with their respective cards in conjunction to whose turn it is. In the middle you will see the discard pile which will hold the current play card. At the right of this card, you will see the draw pile. This pile will serve to distribute cards if you don't have any playable cards or if you are forced to draw.\n")
 
     cprint("\nGAMEPLAY", 'blue', cc)
-    print("When it is your turn, you will see your name at the top of your screen and your cards will appear at the bottom. You will be permitted to select which action you desire. \nCARD NUMBER - You will input the card number that you desire to play. \nDRAW CARD - If you can't play any of the available cards, you can input 'd' to draw a card and forfeit your turn. \nSAY UNO! - If you are about to have one card or notice anybody is at one card and have not said UNO!, you can input 'u' to say UNO! Whoever gets caught with one card will receive 4 cards. If you say UNO! and no one has one card and neither do you, you will receive 6 cards.\n")
+    print("When it is your turn, you will see your name at the top of your screen and your cards will appear at the bottom. You will be permitted to select which action you desire. \nCARD NUMBER - You will input the card number that you desire to play. \nDRAW CARD - If you can't play any of the available cards, you can input 'd' to draw a card and forfeit your turn. \nSAY UNO! - If you are about to have one card or notice anybody is at one card and have not said UNO!, you can input 'u' to say UNO! Whoever gets caught with one card will receive 4 cards. If you say UNO! and no one has one card and neither do you, you will receive 6 cards. **VERY IMPORTANT** Remember to say UNO! before you throw your semifinal card!\n")
     
     cprint("\nCARDS", 'yellow', cc)
     print("You will see many cards in this game yet some may seem unfamiliar.\n")
@@ -228,11 +257,22 @@ def goHelp():
     system('clear')
 
 #Function that prints the roster names and their cards
-def showRoster(players, index):
+def showRoster(players, index , uno, unoPlayer):
   for player in range(len(players)):
       if player == index:
         print("►",end="")
-      print(players[player])
+      print(players[player], end=" ")
+      if uno and player == unoPlayer:
+        print("UNO!")
+        continue
+      print("")
+
+#Function for bot to detect if anyone has not said uno  
+def botCheckUNO(players):
+  for player in players:
+    if player.lenHand() == 1 and not player.UNO:
+      return True
+  return False
 
 #Function that executes the skip mechanism
 def skip(index, direction, playerCount):
@@ -265,7 +305,7 @@ def localOptions(player, drawAmount, colorOption, discardTop):
     print(1, end ="")
   else:
     print(drawAmount, end="")
-  print(")\nSay UNO! - Input 'u'")
+  print(")\nSay UNO! - Input 'u' before throwing semifinal card")
   if isinstance(discardTop, WildCard):
     print("\nColor Option: " + colorOption,end="")
   print("\nType --help for rules\n")
@@ -285,9 +325,8 @@ def executeDraw(drawAmount, player, deck):
     drawPile = []
     for drawing in range(drawAmount):
       drawPile.append(deck.pop())
-      drawAmount = 0
     player.drawN(drawPile)
-  return player
+  return player, deck
 
 #Function to pick a color
 def pickColor(colors):
@@ -314,12 +353,16 @@ def startGame(players, deck):
   colors = ['red', 'blue', 'green', 'yellow']
   #Sort Local Hand
   players[0].sortHand()
+  #Set sayUno variable
+  sUNO = False
+  unoPlayer = -1
 
   while True:
     system('clear')
     currPlayer = players[currPlayerIndex]
     print(currPlayer.getName() + "'s turn\n")
-    showRoster(players, currPlayerIndex)
+    
+    showRoster(players, currPlayerIndex, sUNO, unoPlayer)
     
     print("")
     cprint(discardPile[-1], discardPile[-1].getColor(),cc, end="")
@@ -348,15 +391,24 @@ def startGame(players, deck):
         if action == 'd':
           print("\nDrawing Card(s)...\n")
           sleep(2)
-          currPlayer = executeDraw(drawAmount, currPlayer, deck)
+          currPlayer, deck = executeDraw(drawAmount, currPlayer, deck)
           currPlayer.sortHand()
           drawAmount = 0
       except:
         pass
       
       try:
-        if action == 'u':
-          pass
+        if action == 'u' and not sUNO:
+          currPlayer.setUNO()
+          sUNO = True
+          print("\n" + currPlayer.getName() + " said UNO!")
+          unoPlayer = currPlayerIndex
+          sleep(2)
+          continue
+        elif action == 'u' and sUNO:
+          print("\nYou already said UNO!")
+          sleep(2)
+          continue
       except:
         pass
 
@@ -421,12 +473,20 @@ def startGame(players, deck):
       #If the bot can draw, it will draw
       if drawAmount > 0:
         print("\nDrawing Card(s)...\n")
-        drawPile = []
-        for drawing in range(drawAmount):
-          drawPile.append(deck.pop())
+        currPlayer, deck = executeDraw(drawAmount, currPlayer, deck)
         drawAmount = 0
-        currPlayer.drawN(drawPile)
       elif canPlay(discardPile[-1], currPlayer.hand, colorOption) != -1:
+        #Decide wether or not to say UNO
+        decision = ['yes', 'no']
+        if currPlayer.lenHand() == 2 or botCheckUNO(players) and not sUNO:
+          unoDecision = choice(decision)
+          if unoDecision == 'yes':
+            currPlayer.setUNO()
+            sUNO = True
+            print("\n" + currPlayer.getName() + " said UNO!")
+            unoPlayer = currPlayerIndex
+            sleep(2)
+          continue
         action = canPlay(discardPile[-1], currPlayer.hand, colorOption)
         playCard = currPlayer.hand[action]
         if isinstance(playCard, NumberCard):
@@ -451,22 +511,47 @@ def startGame(players, deck):
       else:
         print("\nDrawing Card...\n")
         sleep(2)
-        currPlayer.draw(deck.pop())
+        currPlayer, deck = executeDraw(drawAmount, currPlayer, deck)
 
     #Check if a player won
     if currPlayer.checkWin():
       system('clear')
-      showRoster(players, currPlayerIndex)
+      showRoster(players, currPlayerIndex, sUNO, unoPlayer)
       print("\n" + currPlayer.getName() + " wins!\n")
       print("Returning to Main Menu in 5 seconds...")
       sleep(5)
       system('clear')
       break
+
+    #Check if player said UNO
+    if sUNO:
+      system('clear')
+      lied = True
+      for player in range(len(players)):
+        if players[player].forgotSelfUNO():
+          players[player], deck = executeDraw(4, players[player], deck)
+          lied = False
+          print(players[player].getName() + " forgot to say UNO!")
+          sleep(2)
+          print("Drawing Cards...")
+          sleep(2)
+      if lied and not players[unoPlayer].selfUNO():
+        players[unoPlayer], deck = executeDraw(6, players[unoPlayer], deck)
+        print(players[unoPlayer].getName() + " said UNO at the wrong time!")
+        sleep(2)
+        print("Drawing Cards...")
+      elif players[unoPlayer].selfUNO():
+        print(players[unoPlayer].getName() + " said UNO for themself!")
+      sleep(2)
+      #Reset All UNO Commands
+      sUNO = False
+      unoPlayer = -1
+    
     #Check if deck is close to empty, take out top card of discardPile, reshuffle discard pile and refill deck
     if len(deck) <= 16:
       discardTop = discardPile.pop()
       shuffle(discardPile)
-      for discardCards in (len(discardPile)):
+      for discardCards in range(len(discardPile)):
         deck.append(discardPile.pop())
       discardPile.append(discardTop)
     
@@ -533,6 +618,8 @@ while True:
 
   if option == 1:
     SPMenu()
+  elif option == 2:
+    pass
   elif option == 3:
     goHelp()
   elif option == 4:

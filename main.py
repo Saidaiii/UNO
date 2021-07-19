@@ -478,7 +478,7 @@ def startGame(players, deck):
       elif canPlay(discardPile[-1], currPlayer.hand, colorOption) != -1:
         #Decide wether or not to say UNO
         decision = ['yes', 'no']
-        if currPlayer.lenHand() == 2 or botCheckUNO(players) and not sUNO:
+        if (currPlayer.lenHand() == 2 or botCheckUNO(players)) and not sUNO:
           unoDecision = choice(decision)
           if unoDecision == 'yes':
             currPlayer.setUNO()
@@ -486,7 +486,7 @@ def startGame(players, deck):
             print("\n" + currPlayer.getName() + " said UNO!")
             unoPlayer = currPlayerIndex
             sleep(2)
-          continue
+            continue
         action = canPlay(discardPile[-1], currPlayer.hand, colorOption)
         playCard = currPlayer.hand[action]
         if isinstance(playCard, NumberCard):

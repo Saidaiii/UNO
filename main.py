@@ -257,15 +257,31 @@ def goHelp():
     system('clear')
 
 #Function that prints the roster names and their cards
-def showRoster(players, index , uno, unoPlayer):
+def showRoster(players, index , uno, unoPlayer, direction):
+  #Configure Next Player
+  nextPlayer = index + direction
+  if nextPlayer >= len(players):
+    nextPlayer = 0
+  elif nextPlayer <= -1:
+    nextPlayer = len(players) - 1
+  
+  #Iterate through Roster
   for player in range(len(players)):
-      if player == index:
-        print("►",end="")
-      print(players[player], end=" ")
-      if uno and player == unoPlayer:
-        print("UNO!")
-        continue
-      print("")
+    #Print Current Player Arrow
+    if player == index:
+      print("►",end="")
+    #Print Next Player Arrow
+    elif player == nextPlayer:
+      if direction == 1:
+        print("▼",end="")
+      else:
+        print("▲",end="")
+    print(players[player], end=" ")
+    if uno and player == unoPlayer:
+      print("UNO!")
+      continue
+    print("")
+
 
 #Function for bot to detect if anyone has not said uno  
 def botCheckUNO(players):
@@ -297,6 +313,12 @@ def canPlay(card, hand, colorOption):
       return cards
   return -1
 
+#Prints the discard pile and the deck
+def printMiddle(top):
+  print("")
+  cprint(top, top.getColor(),cc, end="")
+  print(" 🂠\n")
+
 #Function that prints local player options
 def localOptions(player, drawAmount, colorOption, discardTop):
   player.showHand()
@@ -305,7 +327,7 @@ def localOptions(player, drawAmount, colorOption, discardTop):
     print(1, end ="")
   else:
     print(drawAmount, end="")
-  print(")\nSay UNO! - Input 'u' before throwing semifinal card")
+  print(")\nSay UNO! - Input 'u' (Use before throwing)")
   if isinstance(discardTop, WildCard):
     print("\nColor Option: " + colorOption,end="")
   print("\nType --help for rules\n")
@@ -362,11 +384,9 @@ def startGame(players, deck):
     currPlayer = players[currPlayerIndex]
     print(currPlayer.getName() + "'s turn\n")
     
-    showRoster(players, currPlayerIndex, sUNO, unoPlayer)
+    showRoster(players, currPlayerIndex, sUNO, unoPlayer, direction)
     
-    print("")
-    cprint(discardPile[-1], discardPile[-1].getColor(),cc, end="")
-    print(" 🂠\n")
+    printMiddle(discardPile[-1])
 
     #If TopCard is not a Wild, we can reset the colorOption
     if not isinstance(discardPile[-1], WildCard):
@@ -516,7 +536,7 @@ def startGame(players, deck):
     #Check if a player won
     if currPlayer.checkWin():
       system('clear')
-      showRoster(players, currPlayerIndex, sUNO, unoPlayer)
+      showRoster(players, currPlayerIndex, sUNO, unoPlayer, direction)
       print("\n" + currPlayer.getName() + " wins!\n")
       print("Returning to Main Menu in 5 seconds...")
       sleep(5)
@@ -526,6 +546,10 @@ def startGame(players, deck):
     #Check if player said UNO
     if sUNO:
       system('clear')
+      print(currPlayer.getName() + "'s turn\n")
+      showRoster(players, currPlayerIndex, sUNO, unoPlayer, direction)
+      printMiddle(discardPile[-1])
+      print("")
       lied = True
       for player in range(len(players)):
         if players[player].forgotSelfUNO():

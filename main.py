@@ -1,11 +1,12 @@
 """
 Title: UNO
 Purpose: Demonstrate Python proficiency by replicating a card game
+Github Repo: https://github.com/Saidaiii/UNO
 """
 
 #Shuffle - Shuffle cards
 #Randint - Pick random player at start
-#Choice - Random Pick
+#Choice - Random Pick for bots
 from random import shuffle, randint, choice
 #termcolor - Have colored cards
 from termcolor import *
@@ -38,7 +39,7 @@ class Card:
   def getColor(self):
     return self.color
   
-  #Returns the value fof the card
+  #Returns the value of the card
   def getValue(self):
     return self.value
 
@@ -78,7 +79,7 @@ class Player:
       self.colorTitle()
     return ('')
   
-  #Prints all cards with its respective colors and face values
+  #Prints all cards with its respective colors and face values with indexing for player option
   def showHand(self):
       for card in range(self.lenHand()):
           cprint(self.hand[card], self.hand[card].getColor(), cc, end = "")
@@ -92,12 +93,12 @@ class Player:
           if (self.hand[i-1].type == "d2" or self.hand[i-1].type == "d4") and i < 10:
             print(" ", end="")
   
-  #Appends a card to the hand
+  #Appends a card to the hand, reset UNO property
   def draw(self, card):
     self.hand.append(card)
     self.UNO = False
 
-  #Appends many cards to the hand
+  #Appends many cards to the hand, reset UNO property
   def drawN(self, cardStack):
     for card in cardStack:
       self.hand.append(card)
@@ -111,7 +112,7 @@ class Player:
   def getName(self):
     return self.name
   
-  #Sort Players hand
+  #Sort Players hand by colors
   def sortHand(self):
     colorList = ['blue', 'red', 'green', 'yellow']
     startWindow = 0
@@ -150,6 +151,7 @@ class Player:
     else:
       return False
   
+  #Prints UNO! title for the player who said UNO! and is close to winning
   def colorTitle(self):
     cprint("U", 'blue', cc, end="")
     cprint("N", 'yellow', cc, end="")
@@ -286,7 +288,7 @@ def showRoster(players, index , uno, unoPlayer, direction):
 #Function for bot to detect if anyone has not said uno  
 def botCheckUNO(players):
   for player in players:
-    if player.lenHand() == 1 and not player.UNO:
+    if player.forgotSelfUNO():
       return True
   return False
 
@@ -363,12 +365,15 @@ def pickColor(colors):
 
 #Function that runs the single player game
 def startGame(players, deck):
+  #Pick a random index to start with that player
   currPlayerIndex = randint(0, len(players) - 1)
   currPlayer = players[currPlayerIndex]
   #Always Start Game with number card
   while not (isinstance(deck[-1],NumberCard)):
     shuffle(deck)
+  #Place the top card at the deck in the discard
   discardPile = [deck.pop()]
+  #Preset variables such as direction, drawAmount and colorOption
   direction = 1
   drawAmount = 0
   colorOption = ""
@@ -381,11 +386,15 @@ def startGame(players, deck):
 
   while True:
     system('clear')
+    #Set the current Player
     currPlayer = players[currPlayerIndex]
+    #Print who's turn it is
     print(currPlayer.getName() + "'s turn\n")
     
+    #Print the roster of players
     showRoster(players, currPlayerIndex, sUNO, unoPlayer, direction)
     
+    #Print the discard pile with the draw pile
     printMiddle(discardPile[-1])
 
     #If TopCard is not a Wild, we can reset the colorOption
@@ -446,12 +455,16 @@ def startGame(players, deck):
               print("\nInvalid Card...\n")
               sleep(3)
               continue
+          #Check if it is a Action Card
           elif isinstance(playCard, ActionCard):
             if canPlayActNum(playCard, discardPile[-1], colorOption):
+              #Action if card is +2
               if playCard.getValue() == "+2":
                 drawAmount += 2
+              #Action if card is Reverse
               elif playCard.getValue() == "⇄" and drawAmount == 0:
                 direction = 1 if direction == -1 else -1
+              #Action if card is Skip
               elif playCard.getValue() == "X" and drawAmount == 0:
                 currPlayerIndex = skip(currPlayerIndex, direction, len(players))
               else:  
@@ -463,16 +476,21 @@ def startGame(players, deck):
               sleep(3)
               continue
           else:
+            #Action if Wild Card is +4 and the top of discard is not a +2
             if playCard.getValue() == "+4" and not (discardPile[-1].getValue() == "+2"):
               drawAmount += 4
+              #Player has to choose a color
               colorOption = pickColor(colors)
+            #Action if Wild Card is wild and there is no current Draw
             elif playCard.getValue() == "☯" and drawAmount == 0:
+              #Player has to choose a color
               colorOption = pickColor(colors)
             else:
               print("\nInvalid Card...\n")
               sleep(3)
               continue
           
+          #Player will pop the card they picked to the top of the discard pile
           discardPile.append(currPlayer.hand.pop(action))
           print("\nThrowing Card...\n")
           sleep(2)
@@ -499,6 +517,7 @@ def startGame(players, deck):
         #Decide wether or not to say UNO
         decision = ['yes', 'no']
         if (currPlayer.lenHand() == 2 or botCheckUNO(players)) and not sUNO:
+          #Makes a choice wether or not to say UNO
           unoDecision = choice(decision)
           if unoDecision == 'yes':
             currPlayer.setUNO()
@@ -507,10 +526,14 @@ def startGame(players, deck):
             unoPlayer = currPlayerIndex
             sleep(2)
             continue
+        #Store the card index of the card chosen
         action = canPlay(discardPile[-1], currPlayer.hand, colorOption)
+        #Store the card for easy access
         playCard = currPlayer.hand[action]
+        #If card is a number card, we can just keep going
         if isinstance(playCard, NumberCard):
           pass
+        #If card is an action card, take the action steps and keep going
         elif isinstance(playCard, ActionCard):
           if playCard.getValue() == "+2":
             drawAmount += 2
@@ -518,17 +541,22 @@ def startGame(players, deck):
             direction = 1 if direction == -1 else -1
           else:
             currPlayerIndex = skip(currPlayerIndex, direction, len(players))
+        #If card is a wild card, take action steps and keep going
         elif isinstance(playCard, WildCard):
           if playCard.getValue() == "+4":
             drawAmount += 4
+            #Bot will pick a random color
             colorOption = choice(colors)
           elif playCard.getValue() == "☯":
+            #Bot will pick a random color
             colorOption = choice(colors)
         
+        #Bot will pop the card they picked to the top of the discard pile
         discardPile.append(currPlayer.hand.pop(action))
         print("\nThrowing Card...\n")
         sleep(2)
       else:
+        #Bot will draw if it can't find a playable card
         print("\nDrawing Card...\n")
         sleep(2)
         currPlayer, deck = executeDraw(drawAmount, currPlayer, deck)
@@ -551,19 +579,23 @@ def startGame(players, deck):
       printMiddle(discardPile[-1])
       print("")
       lied = True
+      #Iterate through players to see if player or bot who said UNO said it at the wrong time
       for player in range(len(players)):
         if players[player].forgotSelfUNO():
+          #Player or bot who forgot to say uno must draw
           players[player], deck = executeDraw(4, players[player], deck)
           lied = False
           print(players[player].getName() + " forgot to say UNO!")
           sleep(2)
           print("Drawing Cards...")
           sleep(2)
+      #If the player or bot said uno at the wrong time and they did not say it for themself, they must draw
       if lied and not players[unoPlayer].selfUNO():
         players[unoPlayer], deck = executeDraw(6, players[unoPlayer], deck)
         print(players[unoPlayer].getName() + " said UNO at the wrong time!")
         sleep(2)
         print("Drawing Cards...")
+      #If player said uno for themself, then it will just keep going
       elif players[unoPlayer].selfUNO():
         print(players[unoPlayer].getName() + " said UNO for themself!")
       sleep(2)
@@ -579,6 +611,7 @@ def startGame(players, deck):
         deck.append(discardPile.pop())
       discardPile.append(discardTop)
     
+    #Continue to next player
     currPlayerIndex += direction
     #Check if we are on list edge
     currPlayerIndex = 0 if currPlayerIndex > len(players) - 1 else currPlayerIndex
@@ -634,17 +667,22 @@ def SPMenu():
     bot = Player(hand, get_first_name())
     playerList.append(bot)
   
+  #Initialize Game
   startGame(playerList, deck)
 
 while True:
   #Show menu and receive option
   option = menu()
 
+  #Option 1: Move so Single Player Menu
   if option == 1:
     SPMenu()
+  #Option 2: Multi-Player not yet implemented
   elif option == 2:
     pass
+  #Option 3: Show Rules
   elif option == 3:
     goHelp()
+  #Option 4: Finish Program
   elif option == 4:
     break
